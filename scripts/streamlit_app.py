@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CloudAge Data Intelligence — AI-powered analytics chat interface.
+"""Natural Language BI Builder — AI-powered analytics chat interface.
 
 Spotter-inspired conversational UI for natural-language data queries.
 Powered by AWS Bedrock + Athena.
@@ -63,7 +63,7 @@ from scripts.sidebar_helpers import (
 )
 
 # ── Logo path ────────────────────────────────────────────────────────────────
-LOGO_PATH = Path(PROJECT_ROOT) / "assets" / "cloudage-logo.svg"
+LOGO_PATH = Path(PROJECT_ROOT) / "assets" / "avag-logo.svg"
 
 
 def _get_logo_b64() -> str:
@@ -76,7 +76,7 @@ def _get_logo_b64() -> str:
 
 
 def _inject_custom_css():
-    """Inject custom CSS — white background, CloudAge blue branding, moving clouds."""
+    """Inject custom CSS — white background, AVAG navy branding."""
     st.markdown("""
     <style>
     /* ── Global Reset ───────────────────────────────────────────────────── */
@@ -88,110 +88,11 @@ def _inject_custom_css():
         border-bottom: 1px solid #E8EDF2;
     }
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #F0F7FF 0%, #FFFFFF 100%);
+        background: linear-gradient(180deg, #F8F9FB 0%, #FFFFFF 100%);
         border-right: 1px solid #E8EDF2;
     }
 
-    /* ── Moving Clouds Animation ────────────────────────────────────────── */
-    @keyframes drift {
-        from { transform: translateX(-100%); }
-        to   { transform: translateX(100vw); }
-    }
-    .clouds-container {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 220px;
-        overflow: hidden;
-        pointer-events: none;
-        z-index: 0;
-        opacity: 0.45;
-    }
-    .cloud {
-        position: absolute;
-        background: #E3F2FD;
-        border-radius: 50px;
-        animation: drift linear infinite;
-    }
-    .cloud::before, .cloud::after {
-        content: '';
-        position: absolute;
-        background: #E3F2FD;
-        border-radius: 50%;
-    }
-    .cloud-1 {
-        width: 120px; height: 40px;
-        top: 30px;
-        animation-duration: 35s;
-        animation-delay: 0s;
-    }
-    .cloud-1::before {
-        width: 50px; height: 50px;
-        top: -20px; left: 20px;
-    }
-    .cloud-1::after {
-        width: 60px; height: 45px;
-        top: -18px; left: 50px;
-    }
-    .cloud-2 {
-        width: 160px; height: 50px;
-        top: 80px;
-        animation-duration: 45s;
-        animation-delay: -10s;
-    }
-    .cloud-2::before {
-        width: 65px; height: 60px;
-        top: -28px; left: 30px;
-    }
-    .cloud-2::after {
-        width: 75px; height: 55px;
-        top: -22px; left: 70px;
-    }
-    .cloud-3 {
-        width: 100px; height: 35px;
-        top: 50px;
-        animation-duration: 55s;
-        animation-delay: -20s;
-    }
-    .cloud-3::before {
-        width: 45px; height: 42px;
-        top: -18px; left: 15px;
-    }
-    .cloud-3::after {
-        width: 50px; height: 38px;
-        top: -15px; left: 45px;
-    }
-    .cloud-4 {
-        width: 140px; height: 45px;
-        top: 130px;
-        animation-duration: 40s;
-        animation-delay: -5s;
-    }
-    .cloud-4::before {
-        width: 55px; height: 52px;
-        top: -24px; left: 25px;
-    }
-    .cloud-4::after {
-        width: 65px; height: 48px;
-        top: -20px; left: 60px;
-    }
-    .cloud-5 {
-        width: 90px; height: 30px;
-        top: 160px;
-        animation-duration: 50s;
-        animation-delay: -15s;
-    }
-    .cloud-5::before {
-        width: 40px; height: 38px;
-        top: -16px; left: 12px;
-    }
-    .cloud-5::after {
-        width: 45px; height: 35px;
-        top: -14px; left: 38px;
-    }
-
-    /* Ensure main content sits above clouds */
+    /* Ensure main content sits above any stacked elements */
     [data-testid="stMainBlockContainer"] {
         position: relative;
         z-index: 1;
@@ -210,13 +111,13 @@ def _inject_custom_css():
     .hero-title {
         font-size: 2rem;
         font-weight: 700;
-        color: #0D47A1;
+        color: #1E2340;
         margin-bottom: 0.5rem;
         letter-spacing: -0.01em;
     }
     .hero-subtitle {
         font-size: 1.15rem;
-        color: #1976D2;
+        color: #475569;
         font-weight: 500;
         margin-bottom: 0.5rem;
     }
@@ -248,7 +149,7 @@ def _inject_custom_css():
         transition: all 0.2s ease;
     }
     .feature-pill:hover {
-        border-color: #1976D2;
+        border-color: #1E2340;
         box-shadow: 0 4px 16px rgba(25,118,210,0.1);
         transform: translateY(-1px);
     }
@@ -389,9 +290,9 @@ def _inject_custom_css():
         background: #F0F7FF;
     }
     .connector-card.active {
-        border-color: #1976D2;
+        border-color: #1E2340;
         background: #EBF5FF;
-        box-shadow: 0 0 0 1px #1976D2;
+        box-shadow: 0 0 0 1px #1E2340;
     }
     .connector-card-icon {
         font-size: 1.1rem;
@@ -447,18 +348,6 @@ def _inject_custom_css():
     .stDeployButton {display: none;}
     </style>
     """, unsafe_allow_html=True)
-
-    # Inject moving cloud elements
-    st.markdown("""
-    <div class="clouds-container">
-        <div class="cloud cloud-1"></div>
-        <div class="cloud cloud-2"></div>
-        <div class="cloud cloud-3"></div>
-        <div class="cloud cloud-4"></div>
-        <div class="cloud cloud-5"></div>
-    </div>
-    """, unsafe_allow_html=True)
-
 
 # ── Service Layer ────────────────────────────────────────────────────────────
 
@@ -583,16 +472,15 @@ def _render_hero():
 
     logo_html = ""
     if logo_uri:
-        logo_html = f'<img src="{logo_uri}" class="hero-logo-img" alt="CloudAge"/>'
+        logo_html = f'<img src="{logo_uri}" class="hero-logo-img" alt="AVAG"/>'
 
     st.markdown(f"""
     <div class="hero-section">
         {logo_html}
-        <div class="hero-title" style="color:#059669;">AI Data Analyst Agent</div>
-        <div class="hero-subtitle">Instant answers from your data</div>
+        <div class="hero-title">Natural Language BI Builder</div>
+        <div class="hero-subtitle">Self-service insights from plain language</div>
         <div class="hero-desc">
-            Ask questions in plain English. CloudAge generates SQL, executes it
-            against your data warehouse, and delivers trusted answers in seconds.
+            Describe what you need in plain English — "Show me Citroën sales for Q2 2025." The agent writes the query, runs it, and returns a ready-to-use answer. Refine through follow-up questions.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -633,12 +521,12 @@ def _render_suggestions():
     )
 
     suggestions = [
-        ("📚", "How many books are in the library?"),
-        ("🚗", "What is the average price of cars?"),
-        ("💰", "Top 5 most expensive cars"),
-        ("📖", "List all genres in the library"),
-        ("🏎️", "Cars with horsepower above 200"),
-        ("📅", "Books published after 1950"),
+        ("📊", "Show me Citroën sales for Q2 2025"),
+        ("🏆", "Top 10 models by total revenue"),
+        ("📈", "Monthly sales trend for 2024"),
+        ("🌍", "Sales breakdown by region"),
+        ("⚡", "Best-selling SUV models"),
+        ("📅", "Compare Q1 vs Q2 2024 sales"),
     ]
 
     cols = st.columns(3)

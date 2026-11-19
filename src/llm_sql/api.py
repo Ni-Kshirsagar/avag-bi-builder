@@ -14,7 +14,7 @@ from .runner import build_athena_service
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title='Data Architecture AI', version='1.0.0')
+app = FastAPI(title='Natural Language BI Builder', version='1.0.0')
 _service = None
 _service_error: Optional[str] = None
 

@@ -1,0 +1,11 @@
+dealership_id,dealership_name,city,state,region
+D01,Autohaus Augsburg,Augsburg,Bayern,Süd
+D02,Autohaus München,München,Bayern,Süd
+D03,Autohaus Nürnberg,Nürnberg,Bayern,Süd
+D04,Autohaus Regensburg,Regensburg,Bayern,Süd
+D05,Autohaus Ulm,Ulm,Baden-Württemberg,Süd
+D06,Autohaus Stuttgart,Stuttgart,Baden-Württemberg,Süd
+D07,Autohaus Frankfurt,Frankfurt am Main,Hessen,Mitte
+D08,Autohaus Köln,Köln,Nordrhein-Westfalen,West
+D09,Autohaus Hamburg,Hamburg,Hamburg,Nord
+D10,Autohaus Leipzig,Leipzig,Sachsen,Ost

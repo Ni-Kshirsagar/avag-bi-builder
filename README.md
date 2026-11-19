@@ -1,9 +1,6 @@
-# Data Architecture with Generative AI (Text-to-SQL)
+# Natural Language BI Builder
 
-Ask a question in plain English, get back an answer from your data. This service turns
-natural-language questions into SQL using **AWS Bedrock** (Amazon Nova),
-runs the SQL safely (read-only), and returns the result. It ships as an HTTP API
-(FastAPI) and a chat UI (Streamlit), and runs on AWS ECS Fargate.
+Business users can get self-service insights from plain language without writing SQL. Describe what you need — "Show me Citroën sales for Q2 2025" — and the agent turns the request into a query, runs it against your data warehouse, and returns a ready-to-use answer. Users refine through follow-up questions, and reports can be reused across AVAG automotive customer engagements.
 
 Supported data sources: **Athena, Redshift, RDS (PostgreSQL/MySQL), Snowflake, Databricks.**
 
@@ -91,8 +88,8 @@ Set the required variables, then start Streamlit:
 ```bash
 export APP_USERNAME=your-username          # login for the UI
 export APP_PASSWORD=your-password
-export GLUE_DB_NAME=project_library_db
-export GLUE_DB_NAMES=project_library_db,project_cars_db
+export GLUE_DB_NAME=avag_vehicles_db
+export GLUE_DB_NAMES=avag_vehicles_db
 export PROJECT_FILES_BUCKET=langchain-<your-account-id>-eu-north-1
 export ATHENA_WORKGROUP=project-text-to-sql
 export ATHENA_USE_MANAGED_RESULTS=true
@@ -197,7 +194,7 @@ curl "$API_URL/health"
 
 # ask a question
 curl -X POST "$API_URL/query" -H 'Content-Type: application/json' \
-  -d '{"question": "How many books are there?"}'
+  -d '{"question": "How many Citroën models are available?"}'
 ```
 Then open the **Streamlit URL** (stack output `StreamlitUrl`, port `8501`) in a browser and
 log in with `admin` and the password retrieved above.
@@ -286,7 +283,7 @@ curl <API_URL>/health
 # ask a question
 curl -X POST <API_URL>/query \
   -H 'Content-Type: application/json' \
-  -d '{"question": "How many books are there?"}'
+  -d '{"question": "How many Citroën models are available?"}'
 ```
 
 CLI version (for automation):

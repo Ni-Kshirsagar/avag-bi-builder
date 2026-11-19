@@ -1,0 +1,17 @@
+model_id,brand,model,segment,fuel_type,list_price_eur
+M01,Citroën,C3,Kleinwagen,Benzin,17990
+M02,Citroën,ë-C3,Kleinwagen,Elektro,23300
+M03,Citroën,C3 Aircross,SUV,Benzin,23500
+M04,Citroën,C4,Kompaktklasse,Benzin,26900
+M05,Citroën,ë-C4,Kompaktklasse,Elektro,36990
+M06,Citroën,C5 Aircross,SUV,Hybrid,36500
+M07,Citroën,Berlingo,Van,Diesel,28500
+M08,Citroën,ë-Berlingo,Van,Elektro,39900
+M09,Peugeot,208,Kleinwagen,Benzin,21500
+M10,Peugeot,2008,SUV,Benzin,27500
+M11,Peugeot,3008,SUV,Hybrid,41500
+M12,Opel,Corsa,Kleinwagen,Benzin,20500
+M13,Opel,Astra,Kompaktklasse,Hybrid,32000
+M14,Opel,Mokka,SUV,Benzin,27000
+M15,Fiat,500,Kleinwagen,Benzin,17500
+M16,Fiat,500e,Kleinwagen,Elektro,29500
