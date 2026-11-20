@@ -25,14 +25,17 @@ set -euo pipefail
 # ── Configuration ─────────────────────────────────────────────────────────
 # Resolve absolute path so AWS CLI gets a correct file:// URI on all platforms
 # On Windows (Git Bash), AWS CLI needs a native Windows path for file://
-# Convert /c/AWS/... → C:/AWS/... so the CLI can read the file.
+# Convert /c/AWS/... → C:\AWS\... (backslashes) so the CLI can read the file.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEMPLATE_FILE="${SCRIPT_DIR}/cloudformation-template-validated.yml"
 # Convert Git Bash POSIX path to Windows path for AWS CLI
 if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
-  TEMPLATE_FILE_AWS="$(cygpath -w "${TEMPLATE_FILE}")"
+  TEMPLATE_FILE_AWS="$(cygpath -w "${TEMPLATE_FILE}" | sed 's/\\/\\\\/g')"
+  # Use fileb:// on Windows to avoid encoding issues with file://
+  TEMPLATE_BODY_ARG="fileb://$(cygpath -w "${TEMPLATE_FILE}")"
 else
   TEMPLATE_FILE_AWS="${TEMPLATE_FILE}"
+  TEMPLATE_BODY_ARG="file://${TEMPLATE_FILE}"
 fi
 STACK_NAME="cgs-ai-analyst-agent-project"
 REGION="${AWS_REGION:-eu-north-1}"
@@ -221,7 +224,7 @@ echo ""
 # ── Validate template ──────────────────────────────────────────────────────
 echo "Validating template..."
 aws cloudformation validate-template \
-  --template-body file://"$TEMPLATE_FILE_AWS" \
+  --template-body "$TEMPLATE_BODY_ARG" \
   --region "$REGION" \
   > /dev/null && echo "✓ Template valid"
 
@@ -232,7 +235,7 @@ if ! aws cloudformation create-change-set \
   --stack-name "$STACK_NAME" \
   --change-set-name "$CHANGE_SET_NAME" \
   --change-set-type "$CHANGE_SET_TYPE" \
-  --template-body "file://${TEMPLATE_FILE_AWS}" \
+  --template-body "$TEMPLATE_BODY_ARG" \
   --capabilities CAPABILITY_IAM \
   --region "$REGION" \
   --parameters "$CFN_PARAMETERS" \
@@ -247,7 +250,7 @@ if ! aws cloudformation create-change-set \
       --stack-name "$STACK_NAME" \
       --change-set-name "$CHANGE_SET_NAME" \
       --change-set-type CREATE \
-      --template-body "file://${TEMPLATE_FILE_AWS}" \
+      --template-body "$TEMPLATE_BODY_ARG" \
       --capabilities CAPABILITY_IAM \
       --region "$REGION" \
       --parameters "$CFN_PARAMETERS" \
