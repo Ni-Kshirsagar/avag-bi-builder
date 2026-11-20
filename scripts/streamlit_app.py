@@ -994,7 +994,7 @@ def _run_auto_detect():
 
 
 def _render_sidebar():
-    """Render sidebar with CloudAge logo and connection info."""
+    """Render sidebar with AVAG logo and connection info."""
     logo_uri = _get_logo_b64()
 
     with st.sidebar:
@@ -1029,7 +1029,7 @@ def _render_sidebar():
         if logo_uri:
             st.markdown(
                 f'<div class="sidebar-logo">'
-                f'<img src="{logo_uri}" alt="CloudAge"/>'
+                f'<img src="{logo_uri}" alt="AVAG"/>'
                 f'</div>',
                 unsafe_allow_html=True,
             )
@@ -1037,7 +1037,7 @@ def _render_sidebar():
             st.markdown(
                 '<div class="sidebar-logo">'
                 '<span style="font-size:1.5rem; font-weight:700; color:#0D47A1;">'
-                'CloudAge</span></div>',
+                'AVAG</span></div>',
                 unsafe_allow_html=True,
             )
 
@@ -1189,7 +1189,7 @@ def _render_sidebar():
             '<div style="text-align:center; font-size:0.7rem; color:#94A3B8; '
             'padding:1rem 1rem 0.5rem; margin-top:1rem;">'
             'Powered by AWS Bedrock + Athena<br>'
-            '© 2025 CloudAge Global'
+            '© 2025 AVAG Global'
             '</div>',
             unsafe_allow_html=True,
         )
@@ -1242,7 +1242,7 @@ def _check_login() -> bool:
         if logo_uri:
             st.markdown(
                 f'<div style="text-align:center; padding:2rem 0 1rem;">'
-                f'<img src="{logo_uri}" style="width:180px;" alt="CloudAge"/>'
+                f'<img src="{logo_uri}" style="width:180px;" alt="AVAG"/>'
                 f'</div>',
                 unsafe_allow_html=True,
             )
@@ -1282,7 +1282,7 @@ def _check_login() -> bool:
 
 def main() -> None:
     st.set_page_config(
-        page_title='CloudAge — Data Intelligence',
+        page_title='AVAG — Data Intelligence',
         page_icon='☁️',
         layout='centered',
         initial_sidebar_state='expanded',
@@ -1311,7 +1311,7 @@ def main() -> None:
         if logo_uri:
             st.markdown(
                 f'<div class="chat-header">'
-                f'<img src="{logo_uri}" alt="CloudAge"/>'
+                f'<img src="{logo_uri}" alt="AVAG"/>'
                 f'</div>',
                 unsafe_allow_html=True,
             )

@@ -7,8 +7,8 @@ ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
 
 PRIMARY_BUCKET="langchain-${ACCOUNT_ID}-eu-north-1"
 ATHENA_WORKGROUP="project-text-to-sql"
-LIBRARY_DB="project_library_db"
-CARS_DB="project_cars_db"
+LIBRARY_DB="avag_vehicles_db"
+CARS_DB="avag_vehicles_db"
 LOG_GROUP="/ecs/data-architecture-ai"
 
 resource_exists() {

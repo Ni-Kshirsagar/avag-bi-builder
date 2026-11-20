@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Smoke test: loads local data, normalizes CSV, creates an in-memory SQLite DB,
-and runs basic SQL queries to verify the local data path works.
+"""Smoke test: loads the AVAG sample data (vehicle-models, sales, dealerships),
+creates an in-memory SQLite DB, and runs basic SQL queries to verify the
+local data path works.
 Does NOT call AWS or Bedrock.
 """
 import os
@@ -10,72 +11,88 @@ import pandas as pd
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, 'data')
-LIB_JSON = os.path.join(DATA_DIR, 's3_library_data.json')
-CARS_CSV = os.path.join(DATA_DIR, 's3_cars_data.csv')
-NORMALIZED_CARS_CSV = os.path.join(DATA_DIR, 's3_cars_data_normalized.csv')
 
-# Word-to-integer map shared with scripts/normalize_cars.py
-WORD_MAP = {
-    'two': 2, 'three': 3, 'four': 4, 'five': 5,
-    'six': 6, 'seven': 7, 'eight': 8, 'nine': 9,
-    'ten': 10, 'twelve': 12,
-}
+VEHICLES_CSV    = os.path.join(DATA_DIR, 'vehicle-models.csv')
+SALES_CSV       = os.path.join(DATA_DIR, 'sales.csv')
+DEALERSHIPS_CSV = os.path.join(DATA_DIR, 'dealerships.csv')
 
 
-def load_and_check_library() -> pd.DataFrame:
-    print('Loading library data from', LIB_JSON)
-    if not os.path.exists(LIB_JSON):
-        raise FileNotFoundError(f'Library data file not found: {LIB_JSON}')
-    df = pd.read_json(LIB_JSON, lines=True)
-    df['pub_date'] = pd.to_datetime(df.get('pub_date'), errors='coerce')
-    print(f'  Loaded {len(df)} library records.')
-    print('  Sample rows:', df.head(2).to_dict(orient='records'))
+def load_vehicles() -> pd.DataFrame:
+    print('Loading vehicle models from', VEHICLES_CSV)
+    if not os.path.exists(VEHICLES_CSV):
+        raise FileNotFoundError(f'File not found: {VEHICLES_CSV}')
+    df = pd.read_csv(VEHICLES_CSV)
+    print(f'  Loaded {len(df)} vehicle model records.')
+    print('  Sample:', df.head(2).to_dict(orient='records'))
     return df
 
 
-def normalize_cars() -> pd.DataFrame:
-    print('Normalizing cars CSV:', CARS_CSV)
-    if not os.path.exists(CARS_CSV):
-        raise FileNotFoundError(f'Cars CSV not found: {CARS_CSV}')
-    df = pd.read_csv(CARS_CSV)
-
-    doors_raw = df['doors'].astype(str).str.lower()
-    cylinders_raw = df['cylinders'].astype(str).str.lower()
-    df['doors'] = doors_raw.map(WORD_MAP).fillna(doors_raw)
-    df['cylinders'] = cylinders_raw.map(WORD_MAP).fillna(cylinders_raw)
-
-    numeric_cols = ['doors', 'curb_weight', 'cylinders', 'horsepower', 'mpg', 'price']
-    for col in numeric_cols:
-        df[col] = pd.to_numeric(df[col], errors='coerce')
-
-    rows_before = len(df)
-    df = df.dropna(subset=['horsepower', 'price'])
-    dropped = rows_before - len(df)
-    if dropped:
-        print(f'  Dropped {dropped} row(s) with missing horsepower or price.')
-
-    df.to_csv(NORMALIZED_CARS_CSV, index=False)
-    print(f'  Wrote {len(df)} rows to {NORMALIZED_CARS_CSV}')
+def load_sales() -> pd.DataFrame:
+    print('Loading sales from', SALES_CSV)
+    if not os.path.exists(SALES_CSV):
+        raise FileNotFoundError(f'File not found: {SALES_CSV}')
+    df = pd.read_csv(SALES_CSV, parse_dates=['sale_date'])
+    df['net_price_eur'] = pd.to_numeric(df['net_price_eur'], errors='coerce')
+    df['discount_pct']  = pd.to_numeric(df['discount_pct'],  errors='coerce')
+    print(f'  Loaded {len(df)} sale records.')
+    print('  Sample:', df.head(2).to_dict(orient='records'))
     return df
 
 
-def create_sqlite_and_query(cars_df: pd.DataFrame) -> dict:
-    print('Creating in-memory SQLite DB and loading `cars` table...')
+def load_dealerships() -> pd.DataFrame:
+    print('Loading dealerships from', DEALERSHIPS_CSV)
+    if not os.path.exists(DEALERSHIPS_CSV):
+        raise FileNotFoundError(f'File not found: {DEALERSHIPS_CSV}')
+    df = pd.read_csv(DEALERSHIPS_CSV)
+    print(f'  Loaded {len(df)} dealership records.')
+    print('  Sample:', df.head(2).to_dict(orient='records'))
+    return df
+
+
+def create_sqlite_and_query(
+    vehicles_df: pd.DataFrame,
+    sales_df: pd.DataFrame,
+    dealerships_df: pd.DataFrame,
+) -> dict:
+    print('\nCreating in-memory SQLite DB and loading tables...')
     conn = sqlite3.connect(':memory:')
-    cars_df.to_sql('cars', conn, index=False, if_exists='replace')
+    vehicles_df.to_sql('vehicle_models', conn, index=False, if_exists='replace')
+    sales_df.to_sql('sales',             conn, index=False, if_exists='replace')
+    dealerships_df.to_sql('dealerships', conn, index=False, if_exists='replace')
     cur = conn.cursor()
 
     queries = [
-        ('Total cars',                 'SELECT COUNT(*) FROM cars;'),
-        ('Average price',              'SELECT ROUND(AVG(price), 2) FROM cars;'),
-        ('Make with highest HP',       'SELECT make, MAX(horsepower) FROM cars;'),
+        ('Total sales records',
+         'SELECT COUNT(*) FROM sales;'),
+        ('Total vehicle models',
+         'SELECT COUNT(*) FROM vehicle_models;'),
+        ('Average net price (EUR)',
+         'SELECT ROUND(AVG(net_price_eur), 2) FROM sales;'),
+        ('Top brand by sales volume',
+         '''SELECT vm.brand, COUNT(*) AS sales_count
+            FROM sales s
+            JOIN vehicle_models vm ON s.model_id = vm.model_id
+            GROUP BY vm.brand
+            ORDER BY sales_count DESC
+            LIMIT 1;'''),
+        ('Dealerships per region',
+         '''SELECT region, COUNT(*) AS count
+            FROM dealerships
+            GROUP BY region
+            ORDER BY count DESC;'''),
+        ('Sales by sales channel',
+         '''SELECT sales_channel, COUNT(*) AS cnt
+            FROM sales
+            GROUP BY sales_channel
+            ORDER BY cnt DESC;'''),
     ]
+
     results = {}
     for name, sql in queries:
         cur.execute(sql)
-        row = cur.fetchone()
-        results[name] = row
-        print(f'  {name}: {row}')
+        rows = cur.fetchall()
+        results[name] = rows
+        print(f'  {name}: {rows}')
 
     conn.close()
     return results
@@ -83,26 +100,32 @@ def create_sqlite_and_query(cars_df: pd.DataFrame) -> dict:
 
 def main() -> int:
     print('=' * 60)
-    print('Smoke Test — Data Architecture with Generative AI')
+    print('Smoke Test — Natural Language BI Builder (AVAG)')
     print('=' * 60)
 
     try:
-        load_and_check_library()
+        vehicles_df = load_vehicles()
     except Exception as exc:
-        print(f'FAIL: Library data load — {exc}')
+        print(f'FAIL: Vehicle models load — {exc}')
         return 2
 
     try:
-        cars_df = normalize_cars()
+        sales_df = load_sales()
     except Exception as exc:
-        print(f'FAIL: Cars normalization — {exc}')
+        print(f'FAIL: Sales load — {exc}')
         return 3
 
     try:
-        create_sqlite_and_query(cars_df)
+        dealerships_df = load_dealerships()
+    except Exception as exc:
+        print(f'FAIL: Dealerships load — {exc}')
+        return 4
+
+    try:
+        create_sqlite_and_query(vehicles_df, sales_df, dealerships_df)
     except Exception as exc:
         print(f'FAIL: SQLite smoke queries — {exc}')
-        return 4
+        return 5
 
     print('\nSmoke test completed successfully.')
     return 0

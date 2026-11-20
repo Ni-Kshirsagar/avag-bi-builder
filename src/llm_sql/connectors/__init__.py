@@ -1,4 +1,4 @@
-"""Multi-connector framework for CloudAge Data Intelligence.
+"""Multi-connector framework for AVAG Natural Language BI Builder.
 
 Supports Athena, Redshift, RDS (PostgreSQL/MySQL), Snowflake, and Databricks.
 Each connector implements the BaseConnector interface and is configured via

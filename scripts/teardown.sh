@@ -34,7 +34,7 @@ for arg in "$@"; do
 done
 
 echo "=========================================="
-echo "TEARDOWN - CloudAge Data Architecture"
+echo "TEARDOWN - AVAG Natural Language BI Builder"
 echo "=========================================="
 echo "Region:     $REGION"
 echo "Main stack: $MAIN_STACK"

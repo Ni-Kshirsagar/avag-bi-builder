@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# Makefile — Task runner for CloudAge Data Architecture project
+# Makefile — Task runner for AVAG Natural Language BI Builder
 #
 # This file provides short, memorable commands for common tasks.
 # Usage: make <target>

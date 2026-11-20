@@ -354,7 +354,7 @@ if $AUTO_MODE; then
   echo "=========================================="
   echo "Running Glue Crawlers (populates table catalog)..."
   echo "=========================================="
-  for CRAWLER_NAME in project-library-crawler project-cars-crawler; do
+  for CRAWLER_NAME in avag-vehicles-crawler; do
     CRAWLER_STATE="$(aws glue get-crawler --name "$CRAWLER_NAME" --region "$REGION" \
       --query 'Crawler.State' --output text 2>/dev/null || echo 'NOT_FOUND')"
     if [[ "$CRAWLER_STATE" == "READY" ]]; then
@@ -370,10 +370,9 @@ if $AUTO_MODE; then
   echo "Waiting for crawlers to complete..."
   for i in $(seq 1 12); do
     sleep 10
-    LIB_STATE="$(aws glue get-crawler --name project-library-crawler --region "$REGION" \
+    LIB_STATE="$(aws glue get-crawler --name avag-vehicles-crawler --region "$REGION" \
       --query 'Crawler.State' --output text 2>/dev/null || echo 'READY')"
-    CARS_STATE="$(aws glue get-crawler --name project-cars-crawler --region "$REGION" \
-      --query 'Crawler.State' --output text 2>/dev/null || echo 'READY')"
+    CARS_STATE="READY"
     if [[ "$LIB_STATE" == "READY" && "$CARS_STATE" == "READY" ]]; then
       echo "✓ Crawlers complete — Glue tables registered"
       break
