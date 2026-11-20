@@ -24,15 +24,18 @@ set -euo pipefail
 
 # ── Configuration ─────────────────────────────────────────────────────────
 # Resolve absolute path so AWS CLI gets a correct file:// URI on all platforms
-# On Windows (Git Bash), AWS CLI has a known bug with file:// paths and
-# template content is too large to pass as a shell argument.
-# Write to a temp file with Unix line endings that AWS CLI can read.
+# On Windows (Git Bash), AWS CLI cannot read file:// with POSIX /tmp paths.
+# Write a LF-only copy of the template next to the script where AWS CLI can find it.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEMPLATE_FILE="${SCRIPT_DIR}/cloudformation-template-validated.yml"
-# Create a temp copy with strict LF endings AWS CLI can parse
-TEMPLATE_TMP="$(mktemp /tmp/cfn-template-XXXXXX.yml)"
+TEMPLATE_TMP="${SCRIPT_DIR}/.cfn-template-deploy.yml"
 sed 's/\r//' "${TEMPLATE_FILE}" > "${TEMPLATE_TMP}"
-TEMPLATE_BODY_ARG="file://${TEMPLATE_TMP}"
+# Convert to Windows path for AWS CLI
+if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
+  TEMPLATE_BODY_ARG="file://$(cygpath -m "${TEMPLATE_TMP}")"
+else
+  TEMPLATE_BODY_ARG="file://${TEMPLATE_TMP}"
+fi
 STACK_NAME="cgs-ai-analyst-agent-project"
 REGION="${AWS_REGION:-eu-north-1}"
 IAM_USER="${IAM_USER:-$(aws iam get-user --query 'User.UserName' --output text 2>/dev/null || echo 'unknown')}"
