@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >
-  Data architecture stack — VPC, S3, Glue, Athena, and ECS Fargate API.
+  Data architecture stack - VPC, S3, Glue, Athena, and ECS Fargate API.
   The stack creates its own VPC with public subnets (ALB) and private subnets
-  (ECS tasks). All AWS service traffic uses VPC endpoints — no NAT gateway needed.
+  (ECS tasks). All AWS service traffic uses VPC endpoints - no NAT gateway needed.
   Set Create* parameters to false to reuse resources that already exist in your account.
 
 Parameters:
@@ -16,7 +16,7 @@ Parameters:
       - staging
       - development
 
-  # ── VPC CIDR ──────────────────────────────────────────────────────────────
+  # -- VPC CIDR --------------------------------------------------------------
   VpcCidr:
     Type: String
     Default: "10.0.0.0/16"
@@ -25,24 +25,24 @@ Parameters:
   PublicSubnet1Cidr:
     Type: String
     Default: "10.0.0.0/24"
-    Description: Public subnet 1 (ALB) — AZ a
+    Description: Public subnet 1 (ALB) - AZ a
 
   PublicSubnet2Cidr:
     Type: String
     Default: "10.0.1.0/24"
-    Description: Public subnet 2 (ALB) — AZ b
+    Description: Public subnet 2 (ALB) - AZ b
 
   PrivateSubnet1Cidr:
     Type: String
     Default: "10.0.2.0/24"
-    Description: Private subnet 1 (ECS tasks) — AZ a
+    Description: Private subnet 1 (ECS tasks) - AZ a
 
   PrivateSubnet2Cidr:
     Type: String
     Default: "10.0.3.0/24"
-    Description: Private subnet 2 (ECS tasks) — AZ b
+    Description: Private subnet 2 (ECS tasks) - AZ b
 
-  # ── ECS / Container ───────────────────────────────────────────────────────
+  # -- ECS / Container -------------------------------------------------------
   DesiredCount:
     Type: Number
     Default: 0
@@ -74,7 +74,7 @@ Parameters:
     Default: ""
     Description: ACM certificate ARN for HTTPS. Leave empty to use HTTP only (not recommended for production).
 
-  # ── Glue / Athena ─────────────────────────────────────────────────────────
+  # -- Glue / Athena ---------------------------------------------------------
   GlueDatabaseForQueries:
     Type: String
     Default: project_library_db
@@ -140,7 +140,7 @@ Parameters:
       Set true only if S3 data prefixes already exist. Crawlers are auto-created
       by Lambda when data is uploaded, so this is usually false on first deploy.
 
-  # ── Streamlit UI ──────────────────────────────────────────────────────────
+  # -- Streamlit UI ----------------------------------------------------------
   StreamlitDesiredCount:
     Type: Number
     Default: 1
@@ -184,9 +184,9 @@ Metadata:
 
 Resources:
 
-  # ══════════════════════════════════════════════════════════════════════════
-  # VPC — created by this stack so ALB and ECS always share the same network
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
+  # VPC - created by this stack so ALB and ECS always share the same network
+  # --------------------------------------------------------------------------
 
   Vpc:
     Type: AWS::EC2::VPC
@@ -200,7 +200,7 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
 
-  # ── Internet Gateway (ALB needs outbound internet) ────────────────────────
+  # -- Internet Gateway (ALB needs outbound internet) ------------------------
   InternetGateway:
     Type: AWS::EC2::InternetGateway
     Properties:
@@ -216,7 +216,7 @@ Resources:
       VpcId: !Ref Vpc
       InternetGatewayId: !Ref InternetGateway
 
-  # ── Public subnets (ALB only) ─────────────────────────────────────────────
+  # -- Public subnets (ALB only) ---------------------------------------------
   PublicSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -274,7 +274,7 @@ Resources:
       RouteTableId: !Ref PublicRouteTable
 
 
-  # ── Private subnets (ECS tasks — no NAT gateway) ──────────────────────────
+  # -- Private subnets (ECS tasks - no NAT gateway) --------------------------
   PrivateSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -333,9 +333,9 @@ Resources:
       SubnetId: !Ref PrivateSubnet2
       RouteTableId: !Ref PrivateRouteTable2
 
-  # ══════════════════════════════════════════════════════════════════════════
-  # VPC Endpoints — replace NAT gateway; ECS tasks reach AWS services privately
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
+  # VPC Endpoints - replace NAT gateway; ECS tasks reach AWS services privately
+  # --------------------------------------------------------------------------
 
   # Security group shared by all interface endpoints
   VpcEndpointSecurityGroup:
@@ -354,7 +354,7 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
 
-  # ECR — image pull
+  # ECR - image pull
   EcrApiEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
@@ -381,7 +381,7 @@ Resources:
         - !Ref VpcEndpointSecurityGroup
       PrivateDnsEnabled: true
 
-  # CloudWatch Logs — container log shipping
+  # CloudWatch Logs - container log shipping
   CloudWatchLogsEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
@@ -395,7 +395,7 @@ Resources:
         - !Ref VpcEndpointSecurityGroup
       PrivateDnsEnabled: true
 
-  # Bedrock Runtime — LLM inference (Amazon Nova)
+  # Bedrock Runtime - LLM inference (Amazon Nova)
   BedrockRuntimeEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
@@ -409,7 +409,7 @@ Resources:
         - !Ref VpcEndpointSecurityGroup
       PrivateDnsEnabled: true
 
-  # Athena — SQL query execution
+  # Athena - SQL query execution
   AthenaEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
@@ -423,7 +423,7 @@ Resources:
         - !Ref VpcEndpointSecurityGroup
       PrivateDnsEnabled: true
 
-  # Glue — schema catalog
+  # Glue - schema catalog
   GlueEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
@@ -437,7 +437,7 @@ Resources:
         - !Ref VpcEndpointSecurityGroup
       PrivateDnsEnabled: true
 
-  # Secrets Manager — optional credential injection
+  # Secrets Manager - optional credential injection
   SecretsManagerEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
@@ -451,7 +451,7 @@ Resources:
         - !Ref VpcEndpointSecurityGroup
       PrivateDnsEnabled: true
 
-  # S3 Gateway endpoint — free, no security group, attaches to route tables
+  # S3 Gateway endpoint - free, no security group, attaches to route tables
   # Covers ECR layer pulls (stored in S3) and Athena result writes
   S3GatewayEndpoint:
     Type: AWS::EC2::VPCEndpoint
@@ -465,9 +465,9 @@ Resources:
         - !Ref PublicRouteTable
 
 
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
   # S3 Buckets
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
 
   ProjectDataBucketNorth:
     Type: AWS::S3::Bucket
@@ -502,9 +502,9 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
 
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
   # Glue Databases & Crawlers
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
 
   LibraryGlueDatabase:
     Type: AWS::Glue::Database
@@ -591,9 +591,9 @@ Resources:
         Environment: !Ref Environment
 
 
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
   # Athena Workgroup
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
 
   ProjectAthenaWorkgroup:
     Type: AWS::Athena::WorkGroup
@@ -611,9 +611,9 @@ Resources:
         ResultConfiguration:
           OutputLocation: !Sub "s3://${PrimaryDataBucketName}/athenaresults/"
 
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
   # ECR Repository
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
 
   AppEcrRepository:
     Type: AWS::ECR::Repository
@@ -640,9 +640,9 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
 
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
   # CloudWatch Log Group
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
 
   AppLogGroup:
     Type: AWS::Logs::LogGroup
@@ -659,9 +659,9 @@ Resources:
       LogGroupName: /ecs/data-architecture-ai-streamlit
       RetentionInDays: 30
 
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
   # ECS Cluster
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
 
   EcsCluster:
     Type: AWS::ECS::Cluster
@@ -674,9 +674,9 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
 
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
   # IAM Roles
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
 
   EcsTaskExecutionRole:
     Type: AWS::IAM::Role
@@ -784,9 +784,9 @@ Resources:
           Value: !Ref Environment
 
 
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
   # Security Groups
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
 
   AlbSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -835,9 +835,9 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
 
-  # ══════════════════════════════════════════════════════════════════════════
-  # Application Load Balancer — public subnets only
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
+  # Application Load Balancer - public subnets only
+  # --------------------------------------------------------------------------
 
   ApplicationLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
@@ -934,9 +934,9 @@ Resources:
         - Type: forward
           TargetGroupArn: !Ref StreamlitTargetGroup
 
-  # ══════════════════════════════════════════════════════════════════════════
-  # ECS Task Definition & Service — private subnets, no public IP
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
+  # ECS Task Definition & Service - private subnets, no public IP
+  # --------------------------------------------------------------------------
 
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
@@ -1008,7 +1008,7 @@ Resources:
       HealthCheckGracePeriodSeconds: 120
       NetworkConfiguration:
         AwsvpcConfiguration:
-          # Private subnets — no public IP; AWS services reached via VPC endpoints
+          # Private subnets - no public IP; AWS services reached via VPC endpoints
           AssignPublicIp: DISABLED
           Subnets:
             - !Ref PrivateSubnet1
@@ -1023,12 +1023,12 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
 
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
   # Streamlit UI login credentials (Secrets Manager, stack-managed)
   # The value is generated once at create time. Rotate the password out-of-band
-  # with `aws secretsmanager put-secret-value` — CloudFormation will not
+  # with `aws secretsmanager put-secret-value` - CloudFormation will not
   # overwrite it on later stack updates (GenerateSecretString only runs on create).
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
 
   StreamlitCredentialsSecret:
     Type: AWS::SecretsManager::Secret
@@ -1041,9 +1041,9 @@ Resources:
         PasswordLength: 24
         ExcludePunctuation: true
 
-  # ══════════════════════════════════════════════════════════════════════════
-  # Streamlit ECS Task Definition — same image, different entrypoint
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
+  # Streamlit ECS Task Definition - same image, different entrypoint
+  # --------------------------------------------------------------------------
 
   StreamlitTaskDefinition:
     Type: AWS::ECS::TaskDefinition
@@ -1132,9 +1132,9 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
 
-  # ══════════════════════════════════════════════════════════════════════════
-  # Lambda — S3 trigger that auto-creates Glue DBs/Crawlers for new prefixes
-  # ══════════════════════════════════════════════════════════════════════════
+  # --------------------------------------------------------------------------
+  # Lambda - S3 trigger that auto-creates Glue DBs/Crawlers for new prefixes
+  # --------------------------------------------------------------------------
 
   CrawlerTriggerLambdaRole:
     Type: AWS::IAM::Role
@@ -1262,7 +1262,7 @@ Resources:
       SourceArn: !Sub "arn:${AWS::Partition}:s3:::${PrimaryDataBucketName}"
       SourceAccount: !Ref AWS::AccountId
 
-  # S3 bucket notification — fires Lambda on any object creation
+  # S3 bucket notification - fires Lambda on any object creation
   # NOTE: This only works if the bucket is created by this stack (CreatePrimaryDataBucket=true).
   # For pre-existing buckets, configure the notification manually via scripts/configure_s3_notification.sh.
 
@@ -1330,7 +1330,7 @@ Outputs:
     Value: !Ref AthenaWorkgroupName
 
   EcrRepositoryUri:
-    Description: ECR repository URI — push the Docker image here before starting tasks
+    Description: ECR repository URI - push the Docker image here before starting tasks
     Value: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${AppEcrRepository}"
 
   LoadBalancerUrl:
