@@ -24,18 +24,11 @@ set -euo pipefail
 
 # ── Configuration ─────────────────────────────────────────────────────────
 # Resolve absolute path so AWS CLI gets a correct file:// URI on all platforms
-# On Windows (Git Bash), AWS CLI needs a native Windows path for file://
-# Convert /c/AWS/... → C:\AWS\... (backslashes) so the CLI can read the file.
+# On Windows (Git Bash), AWS CLI has a known bug with file:// paths.
+# Workaround: read the template content and pass it directly as a string.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEMPLATE_FILE="${SCRIPT_DIR}/cloudformation-template-validated.yml"
-# Convert Git Bash POSIX path to Windows path for AWS CLI
-if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
-  # cygpath -w gives C:\path\to\file — use forward slashes for file:// URI
-  _WIN_PATH="$(cygpath -m "${TEMPLATE_FILE}")"   # C:/AWS/... (mixed, works with AWS CLI)
-  TEMPLATE_BODY_ARG="file://${_WIN_PATH}"
-else
-  TEMPLATE_BODY_ARG="file://${TEMPLATE_FILE}"
-fi
+TEMPLATE_BODY="$(cat "${TEMPLATE_FILE}")"
 STACK_NAME="cgs-ai-analyst-agent-project"
 REGION="${AWS_REGION:-eu-north-1}"
 IAM_USER="${IAM_USER:-$(aws iam get-user --query 'User.UserName' --output text 2>/dev/null || echo 'unknown')}"
@@ -223,7 +216,7 @@ echo ""
 # ── Validate template ──────────────────────────────────────────────────────
 echo "Validating template..."
 aws cloudformation validate-template \
-  --template-body "$TEMPLATE_BODY_ARG" \
+  --template-body "$TEMPLATE_BODY" \
   --region "$REGION" \
   > /dev/null && echo "✓ Template valid"
 
@@ -234,7 +227,7 @@ if ! aws cloudformation create-change-set \
   --stack-name "$STACK_NAME" \
   --change-set-name "$CHANGE_SET_NAME" \
   --change-set-type "$CHANGE_SET_TYPE" \
-  --template-body "$TEMPLATE_BODY_ARG" \
+  --template-body "$TEMPLATE_BODY" \
   --capabilities CAPABILITY_IAM \
   --region "$REGION" \
   --parameters "$CFN_PARAMETERS" \
@@ -249,7 +242,7 @@ if ! aws cloudformation create-change-set \
       --stack-name "$STACK_NAME" \
       --change-set-name "$CHANGE_SET_NAME" \
       --change-set-type CREATE \
-      --template-body "$TEMPLATE_BODY_ARG" \
+      --template-body "$TEMPLATE_BODY" \
       --capabilities CAPABILITY_IAM \
       --region "$REGION" \
       --parameters "$CFN_PARAMETERS" \
