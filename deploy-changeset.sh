@@ -24,11 +24,15 @@ set -euo pipefail
 
 # ── Configuration ─────────────────────────────────────────────────────────
 # Resolve absolute path so AWS CLI gets a correct file:// URI on all platforms
-# On Windows (Git Bash), AWS CLI has a known bug with file:// paths.
-# Workaround: read the template content and pass it directly as a string.
+# On Windows (Git Bash), AWS CLI has a known bug with file:// paths and
+# template content is too large to pass as a shell argument.
+# Write to a temp file with Unix line endings that AWS CLI can read.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEMPLATE_FILE="${SCRIPT_DIR}/cloudformation-template-validated.yml"
-TEMPLATE_BODY="$(cat "${TEMPLATE_FILE}")"
+# Create a temp copy with strict LF endings AWS CLI can parse
+TEMPLATE_TMP="$(mktemp /tmp/cfn-template-XXXXXX.yml)"
+sed 's/\r//' "${TEMPLATE_FILE}" > "${TEMPLATE_TMP}"
+TEMPLATE_BODY_ARG="file://${TEMPLATE_TMP}"
 STACK_NAME="cgs-ai-analyst-agent-project"
 REGION="${AWS_REGION:-eu-north-1}"
 IAM_USER="${IAM_USER:-$(aws iam get-user --query 'User.UserName' --output text 2>/dev/null || echo 'unknown')}"
@@ -216,7 +220,7 @@ echo ""
 # ── Validate template ──────────────────────────────────────────────────────
 echo "Validating template..."
 aws cloudformation validate-template \
-  --template-body "$TEMPLATE_BODY" \
+  --template-body "$TEMPLATE_BODY_ARG" \
   --region "$REGION" \
   > /dev/null && echo "✓ Template valid"
 
@@ -227,7 +231,7 @@ if ! aws cloudformation create-change-set \
   --stack-name "$STACK_NAME" \
   --change-set-name "$CHANGE_SET_NAME" \
   --change-set-type "$CHANGE_SET_TYPE" \
-  --template-body "$TEMPLATE_BODY" \
+  --template-body "$TEMPLATE_BODY_ARG" \
   --capabilities CAPABILITY_IAM \
   --region "$REGION" \
   --parameters "$CFN_PARAMETERS" \
@@ -242,7 +246,7 @@ if ! aws cloudformation create-change-set \
       --stack-name "$STACK_NAME" \
       --change-set-name "$CHANGE_SET_NAME" \
       --change-set-type CREATE \
-      --template-body "$TEMPLATE_BODY" \
+      --template-body "$TEMPLATE_BODY_ARG" \
       --capabilities CAPABILITY_IAM \
       --region "$REGION" \
       --parameters "$CFN_PARAMETERS" \
