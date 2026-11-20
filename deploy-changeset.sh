@@ -23,7 +23,10 @@
 set -euo pipefail
 
 # ── Configuration ─────────────────────────────────────────────────────────
-TEMPLATE_FILE="cloudformation-template-validated.yml"
+# Resolve absolute path so AWS CLI gets a correct file:// URI on all platforms
+# (Git Bash on Windows requires an absolute POSIX path)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TEMPLATE_FILE="${SCRIPT_DIR}/cloudformation-template-validated.yml"
 STACK_NAME="cgs-ai-analyst-agent-project"
 REGION="${AWS_REGION:-eu-north-1}"
 IAM_USER="${IAM_USER:-$(aws iam get-user --query 'User.UserName' --output text 2>/dev/null || echo 'unknown')}"
