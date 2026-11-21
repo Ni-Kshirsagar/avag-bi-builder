@@ -39,7 +39,12 @@ else
   CREATE_LIBRARY_DB="true"
 fi
 
-if resource_exists aws glue get-database --name "$CARS_DB" --region "$REGION"; then
+# When both database names are identical, only create one to avoid
+# CloudFormation duplicate-name conflict. The library DB is the primary
+# query database (mapped to GLUE_DB_NAME); skip the cars DB duplicate.
+if [[ "$CARS_DB" == "$LIBRARY_DB" ]]; then
+  CREATE_CARS_DB="false"
+elif resource_exists aws glue get-database --name "$CARS_DB" --region "$REGION"; then
   CREATE_CARS_DB="false"
 else
   CREATE_CARS_DB="true"
