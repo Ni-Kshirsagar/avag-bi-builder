@@ -29,6 +29,6 @@ databricks-sql-connector>=3.1.0,<4.0
 # src/llm_sql/core.py). LangChain is kept only for the notebooks in POC/.
 # Safe to remove if you don't run those notebooks.
 # ─────────────────────────────────────────────────────────────────────────────
-langchain>=0.2,<0.4
-langchain-community>=0.2,<0.4
-langchain-experimental>=0.0.60,<0.1
+langchain==0.2.17
+langchain-community==0.2.17
+langchain-experimental==0.0.60
