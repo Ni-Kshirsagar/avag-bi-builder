@@ -183,9 +183,12 @@ fi
 # Only create the Glue crawlers in --auto mode, where the deploy also seeds
 # data and runs the crawlers end-to-end. Review mode leaves them off so a
 # plain change set does not provision crawlers.
-CREATE_CRAWLERS_PARAM="false"
-if $AUTO_MODE; then
-  CREATE_CRAWLERS_PARAM="true"
+# Set CREATE_CRAWLERS=false to skip crawlers if the account is denied access.
+CREATE_CRAWLERS_PARAM="${CREATE_CRAWLERS:-true}"
+if [[ "$CREATE_CRAWLERS_PARAM" != "true" ]]; then
+  CREATE_CRAWLERS_PARAM="false"
+elif ! $AUTO_MODE; then
+  CREATE_CRAWLERS_PARAM="false"
 fi
 
 # ── CloudFormation parameters ─────────────────────────────────────────────
