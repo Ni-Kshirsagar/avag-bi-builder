@@ -509,7 +509,6 @@ Resources:
   LibraryGlueDatabase:
     Type: AWS::Glue::Database
     Condition: CreateLibraryGlueDatabase
-    DeletionPolicy: Retain
     Properties:
       CatalogId: !Ref AWS::AccountId
       DatabaseInput:
@@ -519,7 +518,6 @@ Resources:
   CarsGlueDatabase:
     Type: AWS::Glue::Database
     Condition: CreateCarsGlueDatabase
-    DeletionPolicy: Retain
     Properties:
       CatalogId: !Ref AWS::AccountId
       DatabaseInput:
