@@ -69,8 +69,9 @@ source .venv/bin/activate
 ```bash
 pip install -r requirements-dev.txt   # prod deps + Streamlit + test tools
 ```
-> `requirements.txt` = production deps (used by Docker). `requirements-dev.txt` includes
-> everything in it, plus `hypothesis` for testing. For local work, use the `-dev` one.
+> `requirements.txt` = production deps (used by Docker and CI). It includes `hypothesis`
+> because CI runs the unit tests against this file, so `requirements-dev.txt` is the same
+> set. Either works locally; the `-dev` one is conventional.
 
 ### Step 3: Run the quality gate (no AWS calls)
 ```bash

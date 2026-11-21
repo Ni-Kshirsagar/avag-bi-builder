@@ -550,7 +550,7 @@ export ATHENA_WORKGROUP=project-text-to-sql
 export ATHENA_USE_MANAGED_RESULTS=true
 export APP_USERNAME=your-username
 export APP_PASSWORD=your-password
-pip install -r requirements-dev.txt   # hypothesis is in dev deps
+pip install -r requirements-dev.txt   # local dev install (prod deps + test extras)
 make ui
 # or: PYTHONPATH=src streamlit run scripts/streamlit_app.py
 ```
